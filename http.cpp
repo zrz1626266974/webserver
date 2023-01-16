@@ -100,6 +100,63 @@ int http::parse_req_content(string req_content) {
 		}
 	}
 	
+	string req_body;
+	getline(buffer, req_body);
+	if (!req_body.empty()) {
+		this->req_body = req_body;
+	}
+	
+	return 0;
+}
+
+int http::parse_req_url(string url) {
+	if (url.empty()) {
+		return -1;
+	}
+	
+	char path[256];
+	char req_data[256];
+	sscanf(url.c_str(), "%[^?]?%s", path, req_data);
+	
+	stringstream buffer(req_data);
+	string kv;
+	
+	while (getline(buffer, kv, '&')) {
+		if (!kv.empty()) {
+			
+			char key[32], value[256];
+			sscanf(kv.c_str(), "%[^=]=%s", key, value);
+			this->req_data_kv[key] = value;
+
+		}
+	}
+	
+	
+	return 0;
+}
+
+int http::parse_req_body(string req_body) {
+	if (req_body.empty()) {
+		return -1;
+	}
+	
+	stringstream buffer(req_body);
+	string kv;
+	
+	while (getline(buffer, kv, '&')) {
+		if (!kv.empty()) {
+			
+			char key[32], value[256];
+			sscanf(kv.c_str(), "%[^=]=%s", key, value);
+			this->req_data_kv[key] = value;
+
+		}
+	}
+	
+	for (map<string, string>::iterator it = this->req_data_kv.begin(); it != this->req_data_kv.end(); ++ it) {
+		cout << it->first << ": " << it->second << endl;
+	}
+	
 	return 0;
 }
 

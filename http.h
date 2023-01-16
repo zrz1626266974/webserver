@@ -16,6 +16,8 @@ public:
 	void add_msg_head(map<string, string> kv);
 	
 	int parse_req_content(string req_content);
+	int parse_req_url(string url);
+	int parse_req_body(string req_body);
 	
 /************************/
 /*		getter			*/
@@ -58,6 +60,8 @@ private:
 	// for client request
 	string method;
 	string url;
+	string path;
+	map<string, string> req_data_kv;
 	string version;
 	map<string, string> kv;
 	string req_body;

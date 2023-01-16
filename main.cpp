@@ -105,7 +105,8 @@ int main(int argc, char **argv) {
 		
 		cout << ">>>>>>>>>>> http parse end   <<<<<<<<<<<<<" << endl;
 		#endif
-		
+		h.parse_req_url(h.get_url());
+		h.parse_req_body(h.get_req_body());
 		if (h.get_url() == "/favicon.ico") {
 			ret = t.send_client_buffer(h2.get_message());
 		} else {
