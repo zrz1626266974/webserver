@@ -67,7 +67,7 @@ int http::parse_req_content(string req_content) {
 	char url[256];
 	char version[16];
 	
-	kv.clear();
+	this->req_header_kv.clear();
 	
 	stringstream buffer(req_content);
 	
@@ -93,7 +93,7 @@ int http::parse_req_content(string req_content) {
 			sscanf(item.c_str(), FMT_KV, key, value);
 			//cout << item << endl;
 			cout << key << " : " << value << endl;
-			this->kv[key] = value;
+			this->req_header_kv[key] = value;
 		} 
 		else {
 			break;
@@ -114,9 +114,10 @@ int http::parse_req_url(string url) {
 		return -1;
 	}
 	
-	char path[256];
-	char req_data[256];
+	char path[256] = {0};
+	char req_data[256] = {0};
 	sscanf(url.c_str(), "%[^?]?%s", path, req_data);
+	cout << path << " : " << req_data << endl;
 	
 	stringstream buffer(req_data);
 	string kv;
@@ -127,7 +128,7 @@ int http::parse_req_url(string url) {
 			char key[32], value[256];
 			sscanf(kv.c_str(), "%[^=]=%s", key, value);
 			this->req_data_kv[key] = value;
-
+			cout << "\"" << kv << "\"" << endl;
 		}
 	}
 	
@@ -149,14 +150,15 @@ int http::parse_req_body(string req_body) {
 			char key[32], value[256];
 			sscanf(kv.c_str(), "%[^=]=%s", key, value);
 			this->req_data_kv[key] = value;
-
+			cout << "\"" << kv << "\"" << endl;
 		}
 	}
 	
+	#if 0
 	for (map<string, string>::iterator it = this->req_data_kv.begin(); it != this->req_data_kv.end(); ++ it) {
 		cout << it->first << ": " << it->second << endl;
 	}
-	
+	#endif
 	return 0;
 }
 
@@ -194,12 +196,20 @@ string http::get_url() {
 	return this->url;
 }
 
+string http::get_path() {
+	return this->path;
+}
+
+map<string, string> http::get_req_data_kv() {
+	return this->req_data_kv;
+}
+
 string http::get_version() {
 	return this->version;
 }
 
-map<string, string> http::get_kv() {
-	return this->kv;
+map<string, string> http::get_req_header_kv() {
+	return this->req_header_kv;
 }
 
 string http::get_req_body() {
@@ -239,12 +249,20 @@ void http::set_url(string url) {
 	this->url = url;
 }
 
+void http::set_path(string path) {
+	this->path = path;
+}
+
+void http::set_req_data_kv(map<string, string> req_data_kv) {
+	this->req_data_kv = req_data_kv;
+}
+
 void http::set_version(string version) {
 	this->version = version;
 }
 
-void http::set_kv(map<string, string> kv) {
-	this->kv = kv;
+void http::set_req_header_kv(map<string, string> req_header_kv) {
+	this->req_header_kv = req_header_kv;
 }
 
 void http::set_req_data(string req_body) {

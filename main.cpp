@@ -2,7 +2,7 @@
 #include "tcp.h"
 #include <iostream>
 #include <fstream>
-
+#include <algorithm>
 #define STATIC_DIR	"static/"
 
 string read_file(string file_name)
@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
 	http h2;
 	map<string, string> kv2;
 	kv2["Cache-Control"] = "max-age=0";
-	kv2["Content-Length"] = favicon.length();
+	kv2["Content-Length"] = to_string(favicon.length());
 	kv2["Content-Type"] = "image/x-icon";
 	
 	h2.set_body(favicon);
@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
 		cout << ">>>>>>>>>>> http parse start <<<<<<<<<<<<<" << endl;
 		string recv_buffer = t.get_recv_buffer();
 		h.parse_req_content(t.get_recv_buffer());
-		map<string, string> kv = h.get_kv();
+		map<string, string> kv = h.get_req_header_kv();
 		for (map<string, string>::iterator it = kv.begin(); it != kv.end(); ++ it) {
 			cout << it->first << ": " << it->second << endl;
 		}
@@ -107,11 +107,39 @@ int main(int argc, char **argv) {
 		#endif
 		h.parse_req_url(h.get_url());
 		h.parse_req_body(h.get_req_body());
-		if (h.get_url() == "/favicon.ico") {
-			ret = t.send_client_buffer(h2.get_message());
-		} else {
-			ret = t.send_client_buffer(h.get_message());
+		if (h.get_method() == "GET") {
+			if (h.get_url() == "/favicon.ico") {
+				ret = t.send_client_buffer(h2.get_message());
+			} else {
+				ret = t.send_client_buffer(h.get_message());
+			}
 		}
+		else if (h.get_method() == "POST") {
+			map<string, string> kv = h.get_req_data_kv();
+			string body = "{";
+			for (map<string, string>::iterator it = kv.begin(); it != kv.end(); ++ it) {
+				//cout << it->first << ": " << it->second << endl;
+				
+				body += "\"" + it->first + "\": \"" + it->second + "\"";
+				if ( distance(it, kv.end()) != 1) {
+					body += ",";
+				}
+			}
+			body += "}";
+			http tmp;
+			tmp.set_body(body);
+			map<string, string> kv2;
+			kv2["Content-Length"] = to_string(body.length());
+			//kv2["connection"] = "close";
+			kv2["Content-Type"] = "application/json";
+			tmp.add_msg_head(kv2);
+			cout << "body length == " << body.length() << endl;
+			cout << tmp.get_message() << endl;
+			ret = t.send_client_buffer(tmp.get_message());
+			//cout << body << endl;
+		}
+		
+		
 		if (ret < 0)
 			break;
 		cout << "send size: " << ret << endl;

@@ -30,8 +30,11 @@ public:
 	// for client request
 	string get_method();
 	string get_url();
+	string get_path();
+	map<string, string> get_req_data_kv();
+	
 	string get_version();
-	map<string, string> get_kv();
+	map<string, string> get_req_header_kv();
 	string get_req_body();
 	string get_req_content();
 	
@@ -46,8 +49,10 @@ public:
 	// for client request
 	void set_method(string method);
 	void set_url(string url);
+	void set_path(string path);
+	void set_req_data_kv(map<string, string> req_data_kv);
 	void set_version(string version);
-	void set_kv(map<string, string> kv);
+	void set_req_header_kv(map<string, string> req_header_kv);
 	void set_req_data(string req_body);
 	void set_req_content(string req_content);
 	
@@ -63,7 +68,7 @@ private:
 	string path;
 	map<string, string> req_data_kv;
 	string version;
-	map<string, string> kv;
+	map<string, string> req_header_kv;
 	string req_body;
 	string req_content;
 };
