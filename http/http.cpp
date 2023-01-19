@@ -6,6 +6,209 @@
 
 #define FMT_HEADER 	"%s %s %s\r"
 #define FMT_KV 		"%[^:]: %[^\r]\r"
+
+/*HttpHead*/
+
+HttpHead::HttpHead(){}
+HttpHead::HttpHead(const HttpHead& head){}
+HttpHead::~HttpHead(){}
+
+string HttpHead::to_req_str()
+{
+	string result;
+	
+	stringstream buffer;
+	/* request line */
+	buffer << this->method << " " << this->url << " " << this->proto << "\r\n";
+	
+	/* kv line */
+	for (map<string, string>::iterator it=this->kv.begin(); it != this->kv.end(); ++ it)
+	{
+		buffer << it->first << ": " << it->second << "\r\n";
+	}
+	
+	/* empty line */
+	buffer << "\r\n";
+	
+	result = buffer.str();
+	return result;
+}
+
+string HttpHead::to_res_str()
+{
+	string result;
+	
+	stringstream buffer;
+	/* response line */
+	buffer << this->proto << " " << this->code << " " << this->status << "\r\n";
+	
+	/* kv line */
+	for (map<string, string>::iterator it=this->kv.begin(); it != this->kv.end(); ++ it)
+	{
+		buffer << it->first << ": " << it->second << "\r\n";
+	}
+	
+	/* empty line */
+	buffer << "\r\n";
+	
+	result = buffer.str();
+	return result;
+}
+
+void HttpHead::parse_req(string data)
+{
+	stringstream buffer(data);
+	string line;
+	
+	getline(buffer, line);
+	
+	char proto[64] = {0};
+	char url[512] = {0};
+	char method[16] = {0};
+	
+	/* http request first line */
+	if ( !line.empty() )
+	{
+		sscanf(line.c_str(), "%s %s %[^\r]\r", proto, url, method);
+		this->proto 	= proto;
+		this->url 		= url;
+		this->method 	= method;
+	}
+	
+	/* http key: value line */
+	while ( getline(buffer, line) )
+	{
+		/* break when parse to http line "\r\n" */
+		if ( line.empty() || line == "\r")
+			break;
+
+		char k[64] = {0};
+		char v[512] = {0};
+	
+		sscanf(line.c_str(), "%[^:]: %[^\r\n]\r\n", k, v);
+		
+		this->kv[k] = v;
+	}
+	
+}
+
+void HttpHead::parse_res(string data)
+{
+
+}
+
+void HttpHead::clear_kv()
+{
+	this->kv.clear();
+}
+
+/*setter*/
+void HttpHead::set_proto(string proto)
+{
+	this->proto = proto;
+}
+
+void HttpHead::set_code(string code)
+{
+	this->code = code;
+}
+
+void HttpHead::set_status(string status)
+{
+	this->status = status;
+}
+
+void HttpHead::set_method(string method)
+{
+	this->method = method;
+}
+
+void HttpHead::set_url(string url)
+{
+	this->url = url;
+}
+
+void HttpHead::set_kv(map<string, string> kv)
+{
+	this->kv = kv;
+}
+
+/*getter*/
+string HttpHead::get_proto()
+{
+	return this->proto;
+}
+
+string HttpHead::get_code()
+{
+	return this->code;
+}
+
+string HttpHead::get_status()
+{
+	return this->status;
+}
+
+string HttpHead::get_method()
+{
+	return this->url;
+}
+
+string HttpHead::get_url()
+{
+	return this->url;
+}
+
+map<string, string>& HttpHead::get_kv()
+{
+	return this->kv;
+}
+
+
+
+//--------------------------------------------------------------------------------------------------
+
+/*HttpHead*/
+
+Http::Http(){}
+Http::Http(const Http& http){}
+Http::~Http(){}
+
+/*setter*/
+void Http::set_req_head(HttpHead head)
+{
+	this->req_head = head;
+}
+
+void Http::set_res_head(HttpHead head)
+{
+	this->res_head = head;
+}
+
+void Http::set_body(string body)
+{
+	this->body = body;
+}
+
+
+/*getter*/
+HttpHead Http::get_req_head()
+{
+	return this->req_head;
+}
+
+HttpHead Http::get_res_head()
+{
+	return this->res_head;
+}
+
+string Http::get_body()
+{
+	return this->body;
+}
+
+//--------------------------------------------------------------------------------------------------
+/*old*/
 http::http(){
 	this->status_line = "HTTP/1.1 200 OK";
 	this->msg_head = "";

@@ -1,7 +1,7 @@
 APP_NAME = main
 
 TOP_DIR = $(shell pwd)
-MODULES = . socket
+MODULES = . socket decode http
 
 SOURCE_FILES = $(foreach module, $(MODULES), $(wildcard $(module)/*.cpp))
 INCLUDES = $(foreach module, $(MODULES), -I$(module)/)

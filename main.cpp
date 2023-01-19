@@ -1,9 +1,17 @@
 #include "http.h"
+#include "decode.h"
 #include "tcp.h"
 #include <iostream>
+#include <sstream>
 #include <fstream>
 #include <algorithm>
+#include <codecvt>
+#include <locale>
 #define STATIC_DIR	"static/"
+
+using namespace std;
+
+
 
 string read_file(string file_name)
 {
@@ -33,8 +41,30 @@ string read_file(string file_name)
 	return content;
 }
 
-using namespace std;
 int main(int argc, char **argv) {
+	
+	#if 0
+
+	cout << "===================================" << endl;
+
+	HttpHead head;
+	map<string, string>& head_kv = head.get_kv();
+	head_kv["test"] = "right";
+	cout << head.to_req_str() << endl;
+	cout << "===================================" << endl;
+	return 0;
+	#endif
+	tcp t;
+	t.set_port(8888);
+	t.new_server_socket();
+	cout << "server fd: " << t.get_fd()
+		 << endl;
+	
+	cout << "... wait for client connection ..." << endl;
+	t.accept_socket();
+	t.print_client_info();
+	
+	
 	cout << "===================================" << endl;
 	http h;
 
@@ -60,29 +90,12 @@ int main(int argc, char **argv) {
 	h.set_body(body);
 	//cout << h.get_message() << endl;
 	//http h2 = h;
-	/***********************************************/
-	// favicon
-	string favicon_path = STATIC_DIR"favicon.ico";
-	string favicon = read_file(favicon_path);
+
 	
-	http h2;
-	map<string, string> kv2;
-	kv2["Cache-Control"] = "max-age=0";
-	kv2["Content-Length"] = to_string(favicon.length());
-	kv2["Content-Type"] = "image/x-icon";
+
+
 	
-	h2.set_body(favicon);
-	/***********************************************/
-	
-	tcp t;
-	t.set_port(8888);
-	t.new_server_socket();
-	cout << "server fd: " << t.get_fd()
-		 << endl;
-	
-	cout << "... wait for client connection ..." << endl;
-	t.accept_socket();
-	t.print_client_info();
+	Decode decoder;
 	int cnt = 1;
 	while (cnt) 
 	{
@@ -96,11 +109,19 @@ int main(int argc, char **argv) {
 		cout << "recv content: \n" << t.get_recv_buffer() << endl;
 		#if 1
 		cout << ">>>>>>>>>>> http parse start <<<<<<<<<<<<<" << endl;
+		HttpHead head;
+		
 		string recv_buffer = t.get_recv_buffer();
+		head.parse_req(recv_buffer);
+		
+		cout << "===================================" << endl;
+		cout << head.to_req_str() << endl;
+		cout << "===================================" << endl;
+		
 		h.parse_req_content(t.get_recv_buffer());
 		map<string, string> kv = h.get_req_header_kv();
 		for (map<string, string>::iterator it = kv.begin(); it != kv.end(); ++ it) {
-			cout << it->first << ": " << it->second << endl;
+			//cout << it->first << ": " << it->second << endl;
 		}
 		
 		cout << ">>>>>>>>>>> http parse end   <<<<<<<<<<<<<" << endl;
@@ -109,22 +130,44 @@ int main(int argc, char **argv) {
 		h.parse_req_body(h.get_req_body());
 		if (h.get_method() == "GET") {
 			if (h.get_url() == "/favicon.ico") {
+				http h2;
+				map<string, string> kv2;
+				/***********************************************/
+				// favicon
+				string favicon_path = STATIC_DIR"favicon.ico";
+				string favicon = read_file(favicon_path);
+				/***********************************************/
+				
+				kv2["Cache-Control"] = "max-age=0";
+				kv2["Content-Length"] = to_string(favicon.length());
+				kv2["Content-Type"] = "image/x-icon";
+
+				
+				h2.set_body(favicon);
 				ret = t.send_client_buffer(h2.get_message());
 			} else {
-				ret = t.send_client_buffer(h.get_message());
+				string msg = h.get_message();
+				ret = 0;
+				for (int i=0;; ++i) {
+					int size = t.send_client_buffer(msg.substr(i*1024, 1024));
+					ret += size;
+					if (size < 1024) {
+						break;
+					}
+				}
+				
 			}
 		}
 		else if (h.get_method() == "POST") {
 			map<string, string> kv = h.get_req_data_kv();
 			string body = "{";
 			for (map<string, string>::iterator it = kv.begin(); it != kv.end(); ++ it) {
-				//cout << it->first << ": " << it->second << endl;
-				
-				body += "\"" + it->first + "\": \"" + it->second + "\"";
+				body += "\"" + it->first + "\": \"" + decoder.decode_urlencode(it->second) + "\"";
 				if ( distance(it, kv.end()) != 1) {
 					body += ",";
 				}
 			}
+			
 			body += "}";
 			http tmp;
 			tmp.set_body(body);
@@ -133,8 +176,8 @@ int main(int argc, char **argv) {
 			//kv2["connection"] = "close";
 			kv2["Content-Type"] = "application/json";
 			tmp.add_msg_head(kv2);
-			cout << "body length == " << body.length() << endl;
-			cout << tmp.get_message() << endl;
+			//cout << "body length == " << body.length() << endl;
+			//cout << tmp.get_message() << endl;
 			ret = t.send_client_buffer(tmp.get_message());
 			//cout << body << endl;
 		}

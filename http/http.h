@@ -3,6 +3,93 @@
 #include <string>
 #include <map>
 using namespace std;
+
+class HttpHead {
+	
+public:
+	HttpHead();
+	HttpHead(const HttpHead& head);
+	~HttpHead();
+	
+	string to_req_str();
+	string to_res_str();
+	
+	void parse_req(string data);
+	void parse_res(string data);
+	
+	//void add_kv(string k, string v);
+	
+	void clear_kv();
+	
+	/*setter*/
+	void set_proto(string proto);
+	void set_code(string code);
+	void set_status(string status);
+	void set_method(string method);
+	void set_url(string url);
+	void set_kv(map<string, string> kv);
+	
+	/*getter*/
+	string get_proto();
+	string get_code();
+	string get_status();
+	string get_method();
+	string get_url();
+	map<string, string>& get_kv();
+	
+//==============
+//for response
+//==============
+	string code;
+	string status;
+	
+//==============
+//for request
+//==============
+	string method;
+	string url;
+
+	string proto;
+	map<string, string> kv;
+};
+
+class Http {
+
+public:
+	Http();
+	Http(const Http& http);
+	~Http();
+	
+	/*setter*/
+	void set_req_head(HttpHead head);
+	void set_res_head(HttpHead head);
+	void set_body(string body);
+	
+	/*getter*/
+	HttpHead get_req_head();
+	HttpHead get_res_head();
+	string get_body();
+	
+private:
+//==============
+//for response
+//==============
+
+	/*response head*/
+	HttpHead res_head;
+	
+//==============
+//for request
+//==============
+
+	/*request head*/
+	HttpHead req_head;
+	
+	string body;
+
+};
+
+
 class http{
 
 public:
