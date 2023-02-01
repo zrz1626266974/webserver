@@ -69,7 +69,9 @@ void HttpHead::parse_req(string data)
 	/* http request first line */
 	if ( !line.empty() )
 	{
-		sscanf(line.c_str(), "%s %s %[^\r]\r", proto, url, method);
+		sscanf(line.c_str(), "%s %s %[^\r]\r", method, url, proto);
+		//cout << proto << " " << url << " " << method << endl;
+		
 		this->proto 	= proto;
 		this->url 		= url;
 		this->method 	= method;
@@ -151,7 +153,7 @@ string HttpHead::get_status()
 
 string HttpHead::get_method()
 {
-	return this->url;
+	return this->method;
 }
 
 string HttpHead::get_url()
@@ -174,6 +176,30 @@ Http::Http(){}
 Http::Http(const Http& http){}
 Http::~Http(){}
 
+string Http::get_req_content()
+{
+	stringstream buffer;
+	buffer << this->req_head.to_req_str() << this->body;
+	return buffer.str();
+}
+
+string Http::get_res_content()
+{
+	stringstream buffer;
+	buffer << this->res_head.to_res_str() << this->body;
+	return buffer.str();
+}
+
+void Http::parse_req()
+{
+	
+}
+
+void Http::parse_res()
+{
+
+}
+	
 /*setter*/
 void Http::set_req_head(HttpHead head)
 {
@@ -192,12 +218,12 @@ void Http::set_body(string body)
 
 
 /*getter*/
-HttpHead Http::get_req_head()
+HttpHead& Http::get_req_head()
 {
 	return this->req_head;
 }
 
-HttpHead Http::get_res_head()
+HttpHead& Http::get_res_head()
 {
 	return this->res_head;
 }

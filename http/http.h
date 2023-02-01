@@ -60,14 +60,20 @@ public:
 	Http(const Http& http);
 	~Http();
 	
+	string get_req_content();
+	string get_res_content();
+	
+	void parse_req();
+	void parse_res();
+	
 	/*setter*/
 	void set_req_head(HttpHead head);
 	void set_res_head(HttpHead head);
 	void set_body(string body);
 	
 	/*getter*/
-	HttpHead get_req_head();
-	HttpHead get_res_head();
+	HttpHead& get_req_head();
+	HttpHead& get_res_head();
 	string get_body();
 	
 private:
