@@ -1,65 +1,76 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>ZZ</title>
-	<script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
-	<script>
-		$(document).ready(function(){
-			$('#hello').click(function(){
-				alert('hello world hide');
-				$(this).hide();
-			});
-			
-			$('#div0').css({"border": "2px solid red", "width": "80%", "height": "80%", "margin": "auto"})
-			
-			//$('#div1').width(800)
-			//$('#div1').height(600)
-			//$('#div1').css({"border": "2px solid green", "margin": "auto"})
-			$('#div1').addClass("div1")
-			
-			
-			$("button").click(function(){
-				$.post("/?key=one&value=two",
-				{
-					name:"菜鸟教程",
-					url:"http://www.runoob.com"
-				},
-				function(data,status){
-					alert("数据: \n" + data["name"] + "\n状态: " + status);
-				});
-			});
-
-		});
-	</script>
-</head>
+<meta charset="utf-8">
+<title>Hello</title>
+<script src="https://unpkg.com/vue@next"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <style>
 html, body {
 	width: 100%;
 	height: 100%;
-	background: black;
+	margin: 0;
+	background: gray;
+}
+#hello-vue {
+	width: 100%;
+	height: 100%;
 }
 
-.div1 {
-	border: 2px solid red;
-	width: 80%;
-	height: 80%;
-	margin: auto;
+.demo0 {
+	background: pink;
 }
 
 </style>
+</head>
+
 <body>
-	
-	<div id='div1'>
-		<p id='hello'>!!!</p>
-		<form action="http://localhost:8888/?key=one&value=two" method="post">
-			<input type="text" name="user" />
-			<input type="text" name="pwd" />
-			<input type="submit" value="submit" />
-		</form>
-		<button>SUBMIT</button>
+<div id="hello-vue" >
+	<div :class="classObject">
+		<p>{{ message }}</p>
+		<input v-model="userid" type="text" name="userid" placeholder="input something ..." />
+		<input v-model="pwd" type="password" name="pwd" />
+		<p>{{ userid }}</p>
+		<p>{{ pwd }}</p>
+		<button @click="submit">submit</button>
+		
 	</div>
+</div>
 
+<script>
+const HelloVueApp = {
+	data(){
+		return {
+			message: 'message',
+			arr: [],
+			userid: null,
+			pwd: null
+		}
+	},
+	computed: {
+      classObject() {
+         return {
+           'demo0': true
+		 }
+      }
+   },
+   methods: {
+		submit(event) {
+			axios
+			.post('http://localhost:8888', {
+				arr: this.arr,
+				userid: this.userid,
+				pwd: this.pwd
+			})
+			.then(response => (this.message = response))
+			.catch(function (error) { // 请求失败处理
+				this.message = error
+			})
+		}
+   }
+}
+
+Vue.createApp(HelloVueApp).mount('#hello-vue')
+</script>
 </body>
-
 </html>

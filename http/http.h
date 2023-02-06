@@ -16,7 +16,7 @@ public:
 	
 	void parse_req(string data);
 	void parse_res(string data);
-	
+	void parse_url();
 	//void add_kv(string k, string v);
 	
 	void clear_kv();
@@ -28,7 +28,7 @@ public:
 	void set_method(string method);
 	void set_url(string url);
 	void set_kv(map<string, string> kv);
-	
+	void set_url_kv(map<string, string> kv);
 	/*getter*/
 	string get_proto();
 	string get_code();
@@ -36,7 +36,7 @@ public:
 	string get_method();
 	string get_url();
 	map<string, string>& get_kv();
-	
+	map<string, string>& get_url_kv();
 //==============
 //for response
 //==============
@@ -51,6 +51,8 @@ public:
 
 	string proto;
 	map<string, string> kv;
+	
+	map<string, string> url_kv;
 };
 
 class Http {
@@ -63,19 +65,20 @@ public:
 	string get_req_content();
 	string get_res_content();
 	
-	void parse_req();
-	void parse_res();
-	
+	void parse_req(string content);
+	void parse_res(string content);
+	void parse_post_body();
 	/*setter*/
 	void set_req_head(HttpHead head);
 	void set_res_head(HttpHead head);
 	void set_body(string body);
+	void set_post_kv(map<string, string> kv);
 	
 	/*getter*/
 	HttpHead& get_req_head();
 	HttpHead& get_res_head();
 	string get_body();
-	
+	map<string, string> get_post_kv();
 private:
 //==============
 //for response
@@ -92,7 +95,8 @@ private:
 	HttpHead req_head;
 	
 	string body;
-
+	
+	map<string, string> post_kv;
 };
 
 

@@ -74,6 +74,7 @@ void HttpHead::parse_req(string data)
 		
 		this->proto 	= proto;
 		this->url 		= url;
+		this->parse_url();
 		this->method 	= method;
 	}
 	
@@ -97,6 +98,34 @@ void HttpHead::parse_req(string data)
 void HttpHead::parse_res(string data)
 {
 
+}
+
+void HttpHead::parse_url()
+{
+	if (this->url.empty())
+	{
+		return;
+	}
+	
+	char path[256] = {0};
+	char req_data[256] = {0};
+	sscanf(url.c_str(), "%[^?]?%s", path, req_data);
+	cout << path << " : " << req_data << endl;
+	
+	stringstream buffer(req_data);
+	string kv;
+	
+	while (getline(buffer, kv, '&')) {
+		if (!kv.empty()) {
+			
+			char key[32]={0};
+			char value[256]={0};
+			sscanf(kv.c_str(), "%[^=]=%s", key, value);
+			this->url_kv[key] = value;
+			cout << "\"" << kv << "\"" << endl;
+		}
+	}
+	
 }
 
 void HttpHead::clear_kv()
@@ -135,6 +164,11 @@ void HttpHead::set_kv(map<string, string> kv)
 	this->kv = kv;
 }
 
+void HttpHead::set_url_kv(map<string, string> kv)
+{
+	this->url_kv = kv;
+}
+
 /*getter*/
 string HttpHead::get_proto()
 {
@@ -166,6 +200,10 @@ map<string, string>& HttpHead::get_kv()
 	return this->kv;
 }
 
+map<string, string>& HttpHead::get_url_kv()
+{
+	return this->url_kv;
+}
 
 
 //--------------------------------------------------------------------------------------------------
@@ -190,16 +228,44 @@ string Http::get_res_content()
 	return buffer.str();
 }
 
-void Http::parse_req()
+void Http::parse_req(string content)
 {
-	
+	this->req_head.parse_req(content);
+	int pos = content.find("\r\n\r\n");
+	if (pos != content.npos)
+	{
+		this->body = content.substr(pos+4);
+	}
 }
 
-void Http::parse_res()
+void Http::parse_res(string content)
 {
 
 }
+
+void Http::parse_post_body()
+{
+	if (this->body.empty()) {
+		return ;
+	}
 	
+	stringstream buffer(this->body);
+	string kv;
+	
+	
+	while (getline(buffer, kv, '&')) {
+		if (!kv.empty()) {
+			
+			char key[32]={0};
+			char value[256]={0};
+			sscanf(kv.c_str(), "%[^=]=%s", key, value);
+			this->post_kv[key] = value;
+			//cout << key << " === \"" << value << "\"" << endl;
+			//cout << "\"" << kv << "\"" << endl;
+		}
+	}
+}
+
 /*setter*/
 void Http::set_req_head(HttpHead head)
 {
@@ -216,6 +282,10 @@ void Http::set_body(string body)
 	this->body = body;
 }
 
+void Http::set_post_kv(map<string, string> kv)
+{
+	this->post_kv = kv;
+}
 
 /*getter*/
 HttpHead& Http::get_req_head()
@@ -231,6 +301,11 @@ HttpHead& Http::get_res_head()
 string Http::get_body()
 {
 	return this->body;
+}
+
+map<string, string> Http::get_post_kv()
+{
+	return this->post_kv;
 }
 
 //--------------------------------------------------------------------------------------------------
