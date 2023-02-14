@@ -10,13 +10,13 @@
 #include <unistd.h>
 
 #include <sys/epoll.h>
-
+#include "nlohmann/json.hpp"
 #define MAX_CLIENTS	100
 
 #define STATIC_DIR	"static/"
 
 using namespace std;
-
+using json = nlohmann::json;
 
 
 string read_file(string file_name)
@@ -49,6 +49,7 @@ string read_file(string file_name)
 
 int main(int argc, char **argv) {
 	
+	cout << "======start=========" << endl;
 	#if 0
 
 	cout << "===================================" << endl;
@@ -216,7 +217,11 @@ int main(int argc, char **argv) {
 						}
 					}
 					else if (head.get_method() == "POST") 
-					{	
+					{	string s = hp.get_body();
+						auto j = json::parse(s.c_str());
+						//cout << "===[" << j.at("userid") << endl;
+						string body = j.dump();
+						#if 0
 						hp.parse_post_body();
 						map<string, string> kv = hp.get_post_kv();
 						map<string, string> kv_req = hp.get_req_head().get_url_kv();
@@ -241,6 +246,7 @@ int main(int argc, char **argv) {
 						}
 						//body +="}";
 						body += "}";
+						#endif
 						cout << body << endl;
 			
 						HttpHead& head = hp.get_res_head();
@@ -295,7 +301,8 @@ int main(int argc, char **argv) {
 			}
 		}
 		
-		#else 
+		#endif
+		#if 0
 		cout << "[... wait for client connection ...]" << endl;
 		fd = t.accept_socket();
 		if (fd < 0)
@@ -396,7 +403,11 @@ int main(int argc, char **argv) {
 			}
 		}
 		else if (head.get_method() == "POST") 
-		{	
+		{	string s = hp.get_body();
+			auto j = json::parse(s.toStdString().c_str());
+			cout << "===[" << j.at("a") << endl;
+			string body = j.dump();
+			#if 0
 			hp.parse_post_body();
 			map<string, string> kv = hp.get_post_kv();
 			map<string, string> kv_req = hp.get_req_head().get_url_kv();
@@ -421,6 +432,8 @@ int main(int argc, char **argv) {
 			}
 			//body +="}";
 			body += "}";
+			#endif
+			cout << "==========post body=============" << endl;
 			cout << body << endl;
 			
 			HttpHead& head = hp.get_res_head();

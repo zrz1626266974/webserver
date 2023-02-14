@@ -4,6 +4,8 @@ TOP_DIR = $(shell pwd)
 MODULES = . socket decode http
 
 SOURCE_FILES = $(foreach module, $(MODULES), $(wildcard $(module)/*.cpp))
+SOURCE_FILES_HPP = $(wildcard nlohmann/*.hpp)
+SOURCE_FILES_HPP += $(wildcard nlohmann/*.hpp)
 INCLUDES = $(foreach module, $(MODULES), -I$(module)/)
 
 OBJS = $(SOURCE_FILES:.cpp=.o)
