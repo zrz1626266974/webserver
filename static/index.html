@@ -15,6 +15,7 @@ html, body {
 #hello-vue {
 	width: 100%;
 	height: 100%;
+	background: white;
 }
 
 .demo0 {
@@ -62,7 +63,7 @@ const HelloVueApp = {
 				userid: this.userid,
 				pwd: this.pwd
 			})
-			.then(response => (this.message = response))
+			.then(response => (this.message = response.data))
 			.catch(function (error) { // 请求失败处理
 				this.message = error
 			})

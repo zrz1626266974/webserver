@@ -7,6 +7,30 @@
 #include <netinet/in.h>
 
 using namespace std;
+class Tcp {
+
+public:
+	
+	Tcp();
+	Tcp(const Tcp& t);
+	~Tcp();
+	int Socket(int port);
+	int Socket(string ip, string port);
+	int Socket(string ip, int port);
+	int Bind(string ip, string port);
+	Tcp Accept();
+	int Listen(int n);
+	int Connect(string ip, string port);
+	int Send(string buffer);
+	string Recv(int size=1024);
+	
+	void setFd(int fd);
+	int getFd();
+//private:
+	int fd;
+	struct sockaddr_in addr;
+	
+};
 
 class tcp{
 

@@ -4,6 +4,177 @@
 #include <cstring>
 #include <errno.h>
 
+Tcp::Tcp()
+{
+	this->fd = -1;
+}
+
+Tcp::Tcp(const Tcp& t)
+{
+
+}
+
+Tcp::~Tcp()
+{
+	if (this->fd != -1)
+	{
+		cout << "Tcp destroy fd [" << this->fd << "]" << endl;
+		close(this->fd);
+	}
+}
+
+int Tcp::Socket(int port)
+{
+	do {
+		int fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+		if (fd < 0) {
+			break;
+		}
+		
+		int opt = 1;
+		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+		
+		sockaddr_in addr = {0};
+		addr.sin_family = AF_INET;
+		addr.sin_port = htons(port);
+		addr.sin_addr.s_addr = INADDR_ANY;
+		#if 1
+		if (bind(fd, (sockaddr*)&addr, sizeof(struct sockaddr)) < 0) {
+			break;
+		}
+		
+		#endif
+		this->fd = fd;
+		return 0;
+	} while (0);
+	
+	this->fd = -1;
+	return -1;
+}
+
+int Tcp::Socket(string ip, string port)
+{
+	return Socket(ip, stoi(port));
+}
+
+int Tcp::Socket(string ip, int port)
+{
+	do {
+		int fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+		if (fd < 0) {
+			break;
+		}
+		
+		int opt = 1;
+		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+		
+		sockaddr_in addr = {0};
+		addr.sin_family = AF_INET;
+		addr.sin_port = htons(port);
+		addr.sin_addr.s_addr = inet_addr(ip.c_str());
+		#if 1
+		if (bind(fd, (sockaddr*)&addr, sizeof(struct sockaddr)) < 0) {
+			break;
+		}
+		
+		#endif
+		this->fd = fd;
+		return 0;
+	} while (0);
+	
+	this->fd = -1;
+	return -1;
+}
+
+int Tcp::Bind(string ip, string port)
+{
+	do {
+		if (this->fd != -1)
+		{
+			sockaddr_in addr = {0};
+			addr.sin_family = AF_INET;
+			addr.sin_port = htons(stoi(port));
+			addr.sin_addr.s_addr = inet_addr(ip.c_str());
+			if (bind(fd, (sockaddr*)&addr, sizeof(struct sockaddr)) < 0) 
+			{
+				break;
+			}
+		}
+	} while (0);
+	return -1;
+	
+}
+
+Tcp Tcp::Accept()
+{
+	Tcp t;
+	do {
+		if (this->fd > -1)
+		{	
+			
+			memset(&t.addr, 0, sizeof(struct sockaddr_in));
+			socklen_t addr_len = sizeof(struct sockaddr);
+			t.fd = accept(this->fd, (sockaddr *)&t.addr, &addr_len);
+			//return t;
+		}
+	} while (0);
+	return t;
+	//return -1;
+}
+
+int Tcp::Listen(int n)
+{
+	return listen(this->fd, n);
+}
+
+int Tcp::Connect(string ip, string port)
+{
+	do {
+		if (this->fd > -1)
+		{
+			struct sockaddr_in addr = {0};
+			addr.sin_family = AF_INET;
+			addr.sin_port = htons(stoi(port));
+			addr.sin_addr.s_addr = inet_addr(ip.c_str());
+			return connect(this->fd, (struct sockaddr*)&addr, sizeof(struct sockaddr));
+		}
+	} while (0);
+	return -1;
+}
+
+int Tcp::Send(string buffer)
+{
+	if (this->fd > -1)
+	{
+		return send(this->fd, buffer.c_str(), buffer.length(), 0);
+	}
+	return -1;
+}
+
+string Tcp::Recv(int size)
+{
+	int ret = -1;
+	string buffer;
+	if (this->fd > -1)
+	{
+		size = (size <= 0 ? 1024: size);
+		buffer.resize(size);
+		recv(this->fd, &buffer[0], buffer.capacity(), 0);
+	}
+	return buffer;
+}
+
+void Tcp::setFd(int fd)
+{
+	this->fd = fd;
+}
+
+int Tcp::getFd()
+{
+	return this->fd;
+}
+
+//--------------------------------------------------------------------
 tcp::tcp(){
 	init();
 }
